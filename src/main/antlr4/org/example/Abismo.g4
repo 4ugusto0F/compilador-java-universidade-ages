@@ -4,44 +4,41 @@ grammar Abismo;
 
 inicio: comando* EOF;
 
-//Comandos
 comando
     : expressao FINAL
-    | atribuicaoVar
-    | declaracaoVar
+    | inicializacaoVar 
+    | declaracaoVar 
     | comandoSe
     | comandoEnquanto
-    | comandoPara
-    | comandoFacaEnquanto
+    | comandoPara          
+    | comandoFacaEnquanto  
     | bloco
     ;
 
-// Regra para declaração de variável
 declaracaoVar: tiposVar ID (ATRIBUICAO expressao)? FINAL;
-
-// Regra TYPES
 tiposVar: CHAVE_INTEIRO | CHAVE_TEXTO | CHAVE_PROPOSICAO | CHAVE_DECIMAL;
 
 bloco: ABERTURACHAVE comando* FECHAMENTOCHAVE;
 comandoSe: SE ABERTURAPARENTESES expressao FECHAMENTOPARENTESES comando (SENAO comando)?;
 comandoEnquanto: ENQUANTO ABERTURAPARENTESES expressao FECHAMENTOPARENTESES comando;
-atribuicaoVar: ID ATRIBUICAO expressao FINAL;
-
-// Regra FOR
+inicializacaoVar: ID ATRIBUICAO expressao FINAL;
 comandoPara: PARA ABERTURAPARENTESES expressao? FINAL expressao? FINAL expressao? FECHAMENTOPARENTESES comando;
-
-// Regra DO WHILE
 comandoFacaEnquanto: FACA comando ENQUANTO ABERTURAPARENTESES expressao FECHAMENTOPARENTESES FINAL;
+
+// NOVA REGRA: Define uma lista de argumentos para as funções
+listaDeArgumentos: expressao (PONTO expressao)*;
 
 expressao: term ( (OPSOMA | OPSUBTRAIR) term )*;
 term: factor ( (OPMULTIPLICACAO | OPDIVISAO) factor )*;
+
+// ATUALIZADO: A regra factor agora entende variáveis E chamadas de função
 factor:
       INTEIRO
     | DECIMAL
     | TEXTO
     | VERDADEIRO
     | FALSO
-    | ID
+    | ID (ABERTURAPARENTESES listaDeArgumentos? FECHAMENTOPARENTESES)? // ID pode ser uma variável ou uma função
     | ABERTURAPARENTESES expressao FECHAMENTOPARENTESES
     ;
 
@@ -74,12 +71,11 @@ TEXTO: '"' .*? '"';
 // SÍMBOLOS
 FINAL: ';';
 ATRIBUICAO: '=';
+PONTO: '.'; // NOVO TOKEN
 ABERTURAPARENTESES: '(';
 FECHAMENTOPARENTESES: ')';
 ABERTURACHAVE: '{';
 FECHAMENTOCHAVE: '}';
-
-//OPERADORES
 OPSOMA: '+';
 OPSUBTRAIR: '-';
 OPMULTIPLICACAO: '*';
