@@ -4,9 +4,10 @@ grammar Abismo;
 
 inicio: comando* EOF;
 
+//Comandos
 comando
     : expressao FINAL
-    | inicializacaoVar 
+    | atribuicaoVar
     | declaracaoVar 
     | comandoSe
     | comandoEnquanto
@@ -15,67 +16,91 @@ comando
     | bloco
     ;
 
+//Inicialização e Atribuição direta da Variavel
 declaracaoVar: tiposVar ID (ATRIBUICAO expressao)? FINAL;
+
+//tipos de variaveis
 tiposVar: CHAVE_INTEIRO | CHAVE_TEXTO | CHAVE_PROPOSICAO | CHAVE_DECIMAL;
 
+//Bloco de comando
 bloco: ABERTURACHAVE comando* FECHAMENTOCHAVE;
+
+//Comando IF, aceitando outro if dentro
 comandoSe: SE ABERTURAPARENTESES expressao FECHAMENTOPARENTESES comando (SENAO comando)?;
+
+//Comando WHILE
 comandoEnquanto: ENQUANTO ABERTURAPARENTESES expressao FECHAMENTOPARENTESES comando;
-inicializacaoVar: ID ATRIBUICAO expressao FINAL;
+
+//Comando de atribuição da variavel pós declarada
+atribuicaoVar: ID ATRIBUICAO expressao FINAL;
+
+//Comando FOR
 comandoPara: PARA ABERTURAPARENTESES expressao? FINAL expressao? FINAL expressao? FECHAMENTOPARENTESES comando;
+
+//Comando DO-WHILE
 comandoFacaEnquanto: FACA comando ENQUANTO ABERTURAPARENTESES expressao FECHAMENTOPARENTESES FINAL;
 
-// NOVA REGRA: Define uma lista de argumentos para as funções
-listaDeArgumentos: expressao (PONTO expressao)*;
+// Lista de argumento para PrintF
+listaDeArgumentos: expressao (VIRGULA expressao)*;
 
+//Terceira camada de prioridade de expressão.
 expressao: term ( (OPSOMA | OPSUBTRAIR) term )*;
+//Segunda camada de prioridade de expressão.
 term: factor ( (OPMULTIPLICACAO | OPDIVISAO) factor )*;
-
-// ATUALIZADO: A regra factor agora entende variáveis E chamadas de função
+//Primeira camada de prioridade e Dados primarios!
 factor:
       INTEIRO
     | DECIMAL
     | TEXTO
     | VERDADEIRO
     | FALSO
-    | ID (ABERTURAPARENTESES listaDeArgumentos? FECHAMENTOPARENTESES)? // ID pode ser uma variável ou uma função
+    | ID (ABERTURAPARENTESES listaDeArgumentos? FECHAMENTOPARENTESES)?
     | ABERTURAPARENTESES expressao FECHAMENTOPARENTESES
     ;
 
 /* ================= LEXER ================= */
 
-// PALAVRAS-CHAVE E TIPOS
+// IDENTIFICADOR
+ID: [§] [a-zA-Z0-9]*;
+
+//LITERAL TEXTO(STRING)
+TEXTO: '"' .*? '"';
+
+// LITERAIS NUMERICOS
+INTEIRO: [0-9]+;
+DECIMAL: [0-9]+ ',' [0-9]+;
+
+// LITERAIS BOOLEANOS
+VERDADEIRO: 'verdadeiro';
+FALSO: 'falso';
+
+// =====PALAVRAS-CHAVE=====
+
+//Palavras chave de comandos
 SE: 'se';
 SENAO: 'senao';
 ENQUANTO: 'enquanto';
 PARA: 'para';
 FACA: 'faca';
 
+//palavras chave de Tipificadores de variaveis
 CHAVE_DECIMAL: 'qq';
 CHAVE_INTEIRO: 'zz';
 CHAVE_TEXTO: 'txt';
 CHAVE_PROPOSICAO: 'proposicao';
 
-// LITERAIS BOOLEANOS
-VERDADEIRO: 'verdadeiro';
-FALSO: 'falso';
+// ======SÍMBOLOS=====
 
-// IDENTIFICADORES
-ID: [§] [a-zA-Z0-9]*;
-
-// LITERAIS
-INTEIRO: [0-9]+;
-DECIMAL: [0-9]+ ',' [0-9]+;
-TEXTO: '"' .*? '"';
-
-// SÍMBOLOS
+//Delimitadores
 FINAL: ';';
-ATRIBUICAO: '=';
-PONTO: '.'; // NOVO TOKEN
+VIRGULA: ',';
 ABERTURAPARENTESES: '(';
 FECHAMENTOPARENTESES: ')';
 ABERTURACHAVE: '{';
 FECHAMENTOCHAVE: '}';
+
+//Operadores
+ATRIBUICAO: '=';
 OPSOMA: '+';
 OPSUBTRAIR: '-';
 OPMULTIPLICACAO: '*';
