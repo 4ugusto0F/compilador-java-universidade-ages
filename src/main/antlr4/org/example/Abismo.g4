@@ -4,22 +4,36 @@ grammar Abismo;
 
 inicio: comando* EOF;
 
+//Comandos
 comando
-    : expressão FINAL
-    | assignmentStatement FINAL
-    | ifStatement
-    | whileStatement
-    | block
+    : expressao FINAL
+    | atribuicaoVar
+    | declaracaoVar
+    | comandoSe
+    | comandoEnquanto
+    | comandoPara
+    | comandoFacaEnquanto
+    | bloco
     ;
 
-block: ABERTURACHAVE comando* FECHAMENTOCHAVE;
-//Expressões PARSE
-ifStatement: SE ABERTURAPARENTESES expressão FECHAMENTOPARENTESES comando (SENAO comando)?;
-whileStatement: ENQUANTO ABERTURAPARENTESES expressão FECHAMENTOPARENTESES comando;
-assignmentStatement: ID ATRIBUICAO expressão;
+// Regra para declaração de variável
+declaracaoVar: tiposVar ID (ATRIBUICAO expressao)? FINAL;
 
+// Regra TYPES
+tiposVar: CHAVE_INTEIRO | CHAVE_TEXTO | CHAVE_PROPOSICAO | CHAVE_DECIMAL;
 
-expressão: term ( (OPSOMA | OPSUBTRAIR) term )*;
+bloco: ABERTURACHAVE comando* FECHAMENTOCHAVE;
+comandoSe: SE ABERTURAPARENTESES expressao FECHAMENTOPARENTESES comando (SENAO comando)?;
+comandoEnquanto: ENQUANTO ABERTURAPARENTESES expressao FECHAMENTOPARENTESES comando;
+atribuicaoVar: ID ATRIBUICAO expressao FINAL;
+
+// Regra FOR
+comandoPara: PARA ABERTURAPARENTESES expressao? FINAL expressao? FINAL expressao? FECHAMENTOPARENTESES comando;
+
+// Regra DO WHILE
+comandoFacaEnquanto: FACA comando ENQUANTO ABERTURAPARENTESES expressao FECHAMENTOPARENTESES FINAL;
+
+expressao: term ( (OPSOMA | OPSUBTRAIR) term )*;
 term: factor ( (OPMULTIPLICACAO | OPDIVISAO) factor )*;
 factor:
       INTEIRO
@@ -28,7 +42,7 @@ factor:
     | VERDADEIRO
     | FALSO
     | ID
-    | ABERTURAPARENTESES expressão FECHAMENTOPARENTESES
+    | ABERTURAPARENTESES expressao FECHAMENTOPARENTESES
     ;
 
 /* ================= LEXER ================= */
@@ -40,10 +54,10 @@ ENQUANTO: 'enquanto';
 PARA: 'para';
 FACA: 'faca';
 
-KEY_DOUBLE: 'qq';
-KEY_INT: 'zz';
-KEY_STRING: 'txt';
-KEY_BOOLEAN: 'proposicao';
+CHAVE_DECIMAL: 'qq';
+CHAVE_INTEIRO: 'zz';
+CHAVE_TEXTO: 'txt';
+CHAVE_PROPOSICAO: 'proposicao';
 
 // LITERAIS BOOLEANOS
 VERDADEIRO: 'verdadeiro';
@@ -64,6 +78,8 @@ ABERTURAPARENTESES: '(';
 FECHAMENTOPARENTESES: ')';
 ABERTURACHAVE: '{';
 FECHAMENTOCHAVE: '}';
+
+//OPERADORES
 OPSOMA: '+';
 OPSUBTRAIR: '-';
 OPMULTIPLICACAO: '*';
